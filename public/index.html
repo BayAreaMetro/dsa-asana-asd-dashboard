@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Status Report</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #151b26; min-height: 100vh; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 16px; padding: 32px; margin-bottom: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); }
+        .header h1 { font-size: 32px; font-weight: 700; color: #151b26; margin-bottom: 8px; }
+        .header .subtitle { color: #626f86; font-size: 16px; margin-bottom: 20px; }
+        .toolbar { display: flex; align-items: center; gap: 16px; }
+        .refresh-btn { background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: transform 0.2s; }
+        .refresh-btn:hover { transform: translateY(-2px); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+        .stat-card { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 12px; padding: 24px; text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+        .stat-number { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+        .stat-label { color: #626f86; font-size: 14px; }
+        .on-track { color: #4caf50; }
+        .at-risk { color: #ff9800; }
+        .off-track { color: #e2483d; }
+        .complete { color: #2196f3; }
+        .projects-section { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 16px; padding: 32px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); }
+        .section-title { font-size: 24px; font-weight: 600; margin-bottom: 16px; }
+        .progress-description { color: #626f86; font-size: 16px; line-height: 1.6; margin-bottom: 24px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #667eea; }
+        .projects-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        .projects-table th { background: #f8f9fa; padding: 16px; text-align: left; font-weight: 600; font-size: 14px; color: #151b26; border-bottom: 2px solid #e8ecf0; }
+        .projects-table th:first-child { width: 120px; min-width: 120px; }
+        .projects-table td:first-child { width: 120px; min-width: 120px; white-space: nowrap; }
+        .projects-table td { padding: 16px; border-bottom: 1px solid #f0f0f0; }
+        .projects-table tr:hover { background: #f8f9fa; }
+        .project-name { font-weight: 500; color: #151b26; }
+        .status-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+        .status-symbol { width: 8px; height: 8px; border-radius: 50%; }
+        .remaining-positive { color: #4caf50; font-weight: 600; }
+        .remaining-negative { color: #e2483d; font-weight: 600; }
+        .remaining-zero { color: #ff9800; font-weight: 600; }
+        .quarter-q1 { background: #e3f2fd; }
+        .quarter-q2 { background: #e8f5e8; }
+        .quarter-q3 { background: #fff3e0; }
+        .quarter-q4 { background: #fce4ec; }
+        .priority-high { background: #ffebee; }
+        .priority-medium { background: #fff8e1; }
+        .priority-low { background: #f3e5f5; }
+        .priority-none { background: #f5f5f5; }
+        .loading { text-align: center; padding: 60px; color: white; font-size: 18px; }
+        .error { color: #e2483d; text-align: center; padding: 40px; background: rgba(255,255,255,0.95); margin: 24px 0; border-radius: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Portfolio Status Report</h1>
+            <div class="subtitle">Real-time project tracking and progress overview</div>
+            <div class="toolbar">
+                <button class="refresh-btn" onclick="loadDashboard()">↻ Refresh Data</button>
+            </div>
+        </div>
+        <div id="content">
+            <div class="loading">Loading portfolio data...</div>
+        </div>
+    </div>
+
+    <script>
+        const statusColors = {
+            'red': '#ff5722',
+            'yellow': '#ff9800',
+            'green': '#4caf50',
+            'blue': '#2196f3',
+            'purple': '#9c27b0',
+            'pink': '#e91e63',
+            'orange': '#ff5722',
+            'gray': '#9e9e9e',
+            'grey': '#9e9e9e'
+        };
+
+        async function loadDashboard() {
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="loading">Loading portfolio data...</div>';
+            
+            try {
+                const response = await fetch('/api/dashboard');
+                const data = await response.json();
+                
+                if (!response.ok) throw new Error(data.error || 'Failed to load dashboard');
+                
+                content.innerHTML = '';
+                
+                data.forEach(portfolioData => {
+                    const stats = calculateStats(portfolioData.projects);
+                    const progressText = generateProgressDescription(stats, portfolioData.projects.length);
+                    
+                    content.innerHTML = `
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-number">${portfolioData.projects.length}</div>
+                                <div class="stat-label">Total Projects</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number on-track">${stats.onTrack}</div>
+                                <div class="stat-label">On Track</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number at-risk">${stats.atRisk}</div>
+                                <div class="stat-label">At Risk</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number off-track">${stats.offTrack}</div>
+                                <div class="stat-label">Off Track</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" style="color: #2196f3;">${stats.onHold}</div>
+                                <div class="stat-label">On Hold</div>
+                            </div>
+                        </div>
+                        
+                        <div class="projects-section">
+                            <h2 class="section-title">${portfolioData.portfolio.name}</h2>
+                            <div class="progress-description">${progressText}</div>
+                            
+                            <table class="projects-table">
+                                <thead>
+                                    <tr>
+                                        <th>Status</th>
+                                        <th>Project Name</th>
+                                        <th>Priority</th>
+                                    <th>Owner</th>
+                                        <th>Budgeted Time</th>
+                                        <th>Actual Time (Hours)</th>
+                                        <th>Remaining</th>
+                                        <th>FY Quarter Start</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${portfolioData.projects.map(project => `
+                                        <tr>
+                                            <td>
+                                                <div class="status-badge" style="background-color: ${getStatusBgColor(project.status)}; color: ${getStatusTextColor(project.status)}">
+                                                    <span class="status-symbol" style="background-color: ${getStatusColor(project.status)}"></span>
+                                                    ${getStatusType(project.status)}
+                                                </div>
+                                            </td>
+                                            <td class="project-name">${project.name}</td>
+                                            <td class="${getPriorityClass(project.customFields?.priority)}">${project.customFields?.priority || '-'}</td>
+                                            <td>${project.owner || '-'}</td>
+                                            <td>${project.customFields?.budgetedTime || '-'}</td>
+                                            <td>${project.customFields?.actualTimeFTEs || '-'}</td>
+                                            <td class="${getRemainingClass(project.customFields?.remainingTime)}">${project.customFields?.remainingTime || '-'}</td>
+                                            <td class="${getQuarterClass(project.customFields?.fyQuarterStart)}">${project.customFields?.fyQuarterStart || '-'}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                });
+                
+            } catch (error) {
+                content.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        function calculateStats(projects) {
+            return projects.reduce((stats, project) => {
+                const statusType = getStatusType(project.status);
+                switch(statusType) {
+                    case 'On Track': stats.onTrack++; break;
+                    case 'At Risk': stats.atRisk++; break;
+                    case 'Off Track': stats.offTrack++; break;
+                    case 'Complete': stats.complete++; break;
+                    case 'On Hold': stats.onHold++; break;
+                }
+                return stats;
+            }, { onTrack: 0, atRisk: 0, offTrack: 0, complete: 0, onHold: 0 });
+        }
+
+        function generateProgressDescription(stats, total) {
+            const onTrackPercent = Math.round((stats.onTrack / total) * 100);
+            const atRiskPercent = Math.round((stats.atRisk / total) * 100);
+            
+            let description = `Portfolio health overview: ${onTrackPercent}% of projects are on track. `;
+            
+            if (stats.atRisk > 0) {
+                description += `${atRiskPercent}% require attention and may need additional resources or timeline adjustments. `;
+            }
+            
+            if (stats.offTrack > 0) {
+                description += `${stats.offTrack} project(s) are significantly behind schedule and need immediate intervention. `;
+            }
+            
+            if (stats.complete > 0) {
+                description += `${stats.complete} project(s) have been successfully completed. `;
+            }
+            
+            return description + "Regular monitoring and proactive management will help maintain project momentum.";
+        }
+
+        function getStatusColor(status) {
+            if (!status || !status.color) return '#9e9e9e';
+            return statusColors[status.color.toLowerCase()] || '#9e9e9e';
+        }
+
+        function getStatusBgColor(status) {
+            if (!status || !status.color) return '#f6f8fa';
+            const color = statusColors[status.color.toLowerCase()];
+            return color ? color + '20' : '#f6f8fa';
+        }
+
+        function getStatusTextColor(status) {
+            if (!status || !status.color) return '#626f86';
+            return statusColors[status.color.toLowerCase()] || '#626f86';
+        }
+
+        function getStatusType(status) {
+            if (!status) return 'No status';
+            
+            const statusMap = {
+                'green': 'On Track',
+                'yellow': 'At Risk', 
+                'red': 'Off Track',
+                'blue': 'On Hold',
+                'purple': 'Complete'
+            };
+            
+            return statusMap[status.color?.toLowerCase()] || 'Unknown';
+        }
+
+        function getRemainingClass(remaining) {
+            if (remaining === '-') return '';
+            const value = parseFloat(remaining);
+            if (value > 0) return 'remaining-positive';
+            if (value < 0) return 'remaining-negative';
+            return 'remaining-zero';
+        }
+
+        function getQuarterClass(quarter) {
+            if (!quarter || quarter === '-') return '';
+            const quarterText = quarter.toLowerCase();
+            if (quarterText.includes('q1')) return 'quarter-q1';
+            if (quarterText.includes('q2')) return 'quarter-q2';
+            if (quarterText.includes('q3')) return 'quarter-q3';
+            if (quarterText.includes('q4')) return 'quarter-q4';
+            return '';
+        }
+
+        function getPriorityClass(priority) {
+            if (!priority || priority === '-') return 'priority-none';
+            const priorityText = priority.toLowerCase();
+            if (priorityText.includes('high')) return 'priority-high';
+            if (priorityText.includes('medium')) return 'priority-medium';
+            if (priorityText.includes('low')) return 'priority-low';
+            return 'priority-none';
+        }
+
+        // Load dashboard on page load
+        loadDashboard();
+        
+        // Auto-refresh every hour
+        setInterval(loadDashboard, 3600000);
+    </script>
+</body>
+</html>
