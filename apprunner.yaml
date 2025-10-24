@@ -3,7 +3,7 @@ runtime: nodejs22
 build:
   commands:
     build:
-      - npm install
+      - npm ci
 run:
   runtime-version: 22
   command: npm run server
