@@ -16,7 +16,7 @@ let cacheTime = 0;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 app.get('/', (req, res) => {
-  res.json({ message: 'Asana Dashboard API', endpoints: ['/api/dashboard', '/api/portfolio/:id'] });
+  res.json({ message: 'Data Strategy & Analytics Workplan Dashboard API', endpoints: ['/api/dashboard', '/api/portfolio/:id'] });
 });
 
 app.get('/api/dashboard', async (req, res) => {
@@ -45,6 +45,6 @@ app.get('/api/portfolio/:id', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Asana Dashboard API running on http://localhost:${PORT}`);
+  console.log(`Data Strategy & Analytics Workplan Dashboard running on http://localhost:${PORT}`);
   console.log(`Dashboard endpoint: http://localhost:${PORT}/api/dashboard`);
 });

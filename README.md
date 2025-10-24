@@ -1,12 +1,12 @@
-# Asana Dashboard
+# Data Strategy & Analytics Workplan Dashboard
 
-A minimal Node.js application for creating Asana dashboards using the Asana REST API.
+A Node.js application for tracking Data Strategy and Analytics section workplan progress using the Asana REST API.
 
 ## Features
 
-- Retrieve portfolios from your Asana workspace
-- Get projects within each portfolio
-- Display project statuses
+- Real-time tracking of DSA workplan projects and deliverables
+- Portfolio-based project organization and status monitoring
+- Progress visualization with priority and timeline tracking
 
 ## Setup
 

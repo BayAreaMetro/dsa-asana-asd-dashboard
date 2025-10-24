@@ -1,7 +1,7 @@
 {
-  "name": "asana-dashboard",
+  "name": "dsa-workplan-dashboard",
   "version": "1.0.0",
-  "description": "Asana dashboard application using REST API",
+  "description": "Data Strategy & Analytics workplan dashboard using Asana REST API",
   "main": "index.js",
   "engines": {
     "node": ">=22.0.0"
