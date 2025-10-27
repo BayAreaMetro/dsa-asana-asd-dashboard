@@ -1,10 +1,10 @@
-# Data Strategy & Analytics Workplan Dashboard
+# Data Strategy & Analytics Work plan Dashboard
 
-A Node.js application for tracking Data Strategy and Analytics section workplan progress using the Asana REST API.
+A Node.js application for tracking Data Strategy and Analytics section work plan progress using the Asana REST API.
 
 ## Features
 
-- Real-time tracking of DSA workplan projects and deliverables
+- Real-time tracking of DSA work plan projects and deliverables
 - Portfolio-based project organization and status monitoring
 - Progress visualization with priority and timeline tracking
 
