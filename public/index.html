@@ -68,6 +68,12 @@
         .status-report-text ul, .status-report-text ol { margin: 8px 0 12px 20px; }
         .status-report-text li { margin-bottom: 4px; }
         .no-status { color: #626f86; font-style: italic; text-align: center; padding: 40px; }
+        .filters { display: flex; gap: 16px; margin-bottom: 20px; align-items: center; }
+        .filter-group { display: flex; flex-direction: column; gap: 4px; }
+        .filter-group label { font-size: 12px; font-weight: 600; color: #626f86; }
+        .filter-select { padding: 8px 12px; border: 1px solid #e8ecf0; border-radius: 4px; font-size: 14px; background: white; }
+        .filter-select:focus { outline: none; border-color: #667eea; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -76,7 +82,8 @@
             <h1>Data Strategy & Analytics Workplan Dashboard</h1>
             <div class="subtitle">Real-time tracking of DSA section workplan progress and deliverables</div>
             <div class="toolbar">
-                <button class="refresh-btn" onclick="loadDashboard()">↻ Refresh Data</button>
+                <button class="refresh-btn" onclick="loadDashboard()">🔄 Refresh Data</button>
+                <a href="https://app.asana.com/0/portfolio/1209134187526722/1209153842159700" target="_blank" class="refresh-btn" style="text-decoration: none;">📋 View in Asana</a>
             </div>
         </div>
         <div id="content">
@@ -155,7 +162,24 @@
                             <h2 class="section-title">${portfolioData.portfolio.name}</h2>
                             <div class="progress-description">${progressText}</div>
                             
-                            <table class="projects-table">
+                            <div class="filters">
+                                <div class="filter-group">
+                                    <label for="ownerFilter">Filter by Project Owner</label>
+                                    <select id="ownerFilter" class="filter-select" onchange="filterTable()">
+                                        <option value="">All Owners</option>
+                                        ${getUniqueOwners(portfolioData.projects).map(owner => `<option value="${owner}">${owner}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label for="priorityFilter">Filter by Priority</label>
+                                    <select id="priorityFilter" class="filter-select" onchange="filterTable()">
+                                        <option value="">All Priorities</option>
+                                        ${getUniquePriorities(portfolioData.projects).map(priority => `<option value="${priority}">${priority}</option>`).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <table class="projects-table" id="projectsTable">
                                 <thead>
                                     <tr>
                                         <th>Status</th>
@@ -357,6 +381,37 @@
             if (priorityText.includes('medium')) return 'priority-medium';
             if (priorityText.includes('low')) return 'priority-low';
             return 'priority-none';
+        }
+
+        function getUniqueOwners(projects) {
+            const owners = projects.map(p => p.owner || '-').filter(owner => owner !== '-');
+            return [...new Set(owners)].sort();
+        }
+
+        function getUniquePriorities(projects) {
+            const priorities = projects.map(p => p.customFields?.priority || '-').filter(priority => priority !== '-');
+            return [...new Set(priorities)].sort();
+        }
+
+        function filterTable() {
+            const ownerFilter = document.getElementById('ownerFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            const table = document.getElementById('projectsTable');
+            const rows = table.querySelectorAll('tbody tr');
+
+            rows.forEach(row => {
+                const ownerCell = row.cells[3].textContent.trim();
+                const priorityCell = row.cells[2].textContent.trim();
+                
+                const ownerMatch = !ownerFilter || ownerCell === ownerFilter;
+                const priorityMatch = !priorityFilter || priorityCell === priorityFilter;
+                
+                if (ownerMatch && priorityMatch) {
+                    row.classList.remove('hidden');
+                } else {
+                    row.classList.add('hidden');
+                }
+            });
         }
 
         // Load dashboard on page load
