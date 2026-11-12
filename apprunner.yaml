@@ -5,10 +5,12 @@ build:
     build:
       - npm ci
 run:
-  command: npm run server
+  command: npm start
   network:
     port: 8080
     env: PORT
   env:
     - name: PORT
       value: "8080"
+    - name: ASANA_PORTFOLIO_ID
+      value: "1209134187526722"

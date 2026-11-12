@@ -3,430 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Strategy & Analytics Work Plan Dashboard</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #151b26; min-height: 100vh; }
-        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-        .header { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 16px; padding: 32px; margin-bottom: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); }
-        .header h1 { font-size: 32px; font-weight: 700; color: #151b26; margin-bottom: 8px; }
-        .header .subtitle { color: #626f86; font-size: 16px; margin-bottom: 20px; }
-        .toolbar { display: flex; align-items: center; gap: 16px; }
-        .refresh-btn { background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: transform 0.2s; }
-        .refresh-btn:hover { transform: translateY(-2px); }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
-        .stat-card { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 12px; padding: 24px; text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
-        .stat-number { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
-        .stat-label { color: #626f86; font-size: 14px; }
-        .on-track { color: #4caf50; }
-        .at-risk { color: #ff9800; }
-        .off-track { color: #e2483d; }
-        .complete { color: #2196f3; }
-        .projects-section { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 16px; padding: 32px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); }
-        .section-title { font-size: 24px; font-weight: 600; margin-bottom: 16px; }
-        .progress-description { color: #626f86; font-size: 16px; line-height: 1.6; margin-bottom: 24px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #667eea; }
-        .projects-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-        .projects-table th { background: #f8f9fa; padding: 16px; text-align: left; font-weight: 600; font-size: 14px; color: #151b26; border-bottom: 2px solid #e8ecf0; }
-        .projects-table th:first-child { width: 120px; min-width: 120px; }
-        .projects-table td:first-child { width: 120px; min-width: 120px; white-space: nowrap; }
-        .projects-table td { padding: 16px; border-bottom: 1px solid #f0f0f0; }
-        .projects-table tr:hover { background: #f8f9fa; }
-        .projects-table tr.clickable { cursor: pointer; }
-        .projects-table tr.clickable:hover { background: #e3f2fd; }
-        .project-name { font-weight: 500; color: #151b26; }
-        .status-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
-        .status-symbol { width: 8px; height: 8px; border-radius: 50%; }
-        .remaining-positive { color: #4caf50; font-weight: 600; }
-        .remaining-negative { color: #e2483d; font-weight: 600; }
-        .remaining-zero { color: #ff9800; font-weight: 600; }
-        .quarter-q1 { background: #e3f2fd; }
-        .quarter-q2 { background: #e8f5e8; }
-        .quarter-q3 { background: #fff3e0; }
-        .quarter-q4 { background: #fce4ec; }
-        .priority-high { background: #ffebee; }
-        .priority-medium { background: #fff8e1; }
-        .priority-low { background: #f3e5f5; }
-        .priority-none { background: #f5f5f5; }
-        .loading { text-align: center; padding: 60px; color: white; font-size: 18px; }
-        .error { color: #e2483d; text-align: center; padding: 40px; background: rgba(255,255,255,0.95); margin: 24px 0; border-radius: 12px; }
-        
-        /* Side Panel Styles */
-        .side-panel { position: fixed; top: 0; right: -500px; width: 500px; height: 100vh; background: white; box-shadow: -4px 0 20px rgba(0,0,0,0.15); transition: right 0.3s ease; z-index: 1000; overflow-y: auto; }
-        .side-panel.open { right: 0; }
-        .side-panel-header { padding: 24px; border-bottom: 1px solid #e8ecf0; display: flex; justify-content: space-between; align-items: center; }
-        .side-panel-title { font-size: 20px; font-weight: 600; color: #151b26; }
-        .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #626f86; padding: 4px; }
-        .close-btn:hover { color: #151b26; }
-        .side-panel-content { padding: 24px; }
-        .status-report { background: #f8f9fa; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
-        .status-report-title { font-weight: 600; margin-bottom: 8px; color: #151b26; }
-        .status-report-date { color: #626f86; font-size: 14px; margin-bottom: 12px; }
-        .status-report-text { line-height: 1.6; color: #151b26; }
-        .status-report-text h2 { font-size: 18px; font-weight: 600; margin: 16px 0 8px 0; color: #151b26; }
-        .status-report-text h3 { font-size: 16px; font-weight: 600; margin: 12px 0 6px 0; color: #151b26; }
-        .status-report-text p { margin-bottom: 12px; }
-        .status-report-text ul, .status-report-text ol { margin: 8px 0 12px 20px; }
-        .status-report-text li { margin-bottom: 4px; }
-        .no-status { color: #626f86; font-style: italic; text-align: center; padding: 40px; }
-        .filters { display: flex; gap: 16px; margin-bottom: 20px; align-items: center; }
-        .filter-group { display: flex; flex-direction: column; gap: 4px; }
-        .filter-group label { font-size: 12px; font-weight: 600; color: #626f86; }
-        .filter-select { padding: 8px 12px; border: 1px solid #e8ecf0; border-radius: 4px; font-size: 14px; background: white; }
-        .filter-select:focus { outline: none; border-color: #667eea; }
-        .hidden { display: none !important; }
-    </style>
+    <title>Data Strategy &amp; Analytics Work Plan Dashboard</title>
+    <meta name="theme-color" content="#0b2d3a">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <script src="/js/dashboard-utils.js" defer></script>
+    <script src="/js/api.js" defer></script>
+    <script src="/js/dashboard.js" defer></script>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Data Strategy & Analytics Work Plan Dashboard</h1>
-            <div class="subtitle">Real-time tracking of DSA section work plan progress and deliverables</div>
-            <div class="toolbar">
-                <button class="refresh-btn" onclick="loadDashboard()">🔄 Refresh Data</button>
-                <a href="https://app.asana.com/0/portfolio/1209134187526722/1209153842159700" target="_blank" class="refresh-btn" style="text-decoration: none;">📋 View in Asana</a>
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="brand-line">
+                <span class="brand-name">Metropolitan Transportation Commission</span>
+                <span class="brand-divider" aria-hidden="true"></span>
+                <span class="brand-team">Data Strategy &amp; Analytics</span>
+            </div>
+            <p class="eyebrow">Portfolio performance</p>
+            <div class="hero-row">
+                <div>
+                    <h1>Work Plan Dashboard</h1>
+                    <p class="subtitle">A current view of DSA priorities, portfolio health, ownership, and planned effort.</p>
+                </div>
+                <div class="toolbar">
+                    <button id="refreshButton" class="action-button action-button-primary" type="button">Refresh data</button>
+                    <a id="asanaLink" class="action-button action-button-secondary hidden" target="_blank" rel="noopener noreferrer">View in Asana</a>
+                </div>
             </div>
         </div>
-        <div id="content">
+    </header>
+
+    <main class="container">
+        <div id="content" aria-live="polite">
             <div class="loading">Loading portfolio data...</div>
         </div>
-    </div>
+    </main>
 
-    <!-- Side Panel -->
-    <div id="sidePanel" class="side-panel">
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <span>Metropolitan Transportation Commission</span>
+            <span>Data Strategy &amp; Analytics</span>
+        </div>
+    </footer>
+
+    <aside id="sidePanel" class="side-panel" aria-hidden="true" aria-labelledby="sidePanelTitle">
         <div class="side-panel-header">
-            <div class="side-panel-title" id="sidePanelTitle">Status Report</div>
-            <button class="close-btn" onclick="closeSidePanel()">×</button>
+            <h2 class="side-panel-title" id="sidePanelTitle">Status Report</h2>
+            <button id="closePanelButton" class="close-button" type="button" aria-label="Close status report">&times;</button>
         </div>
         <div class="side-panel-content" id="sidePanelContent">
             <div class="no-status">No status report available</div>
         </div>
-    </div>
-
-    <script>
-        const statusColors = {
-            'red': '#ff5722',
-            'yellow': '#ff9800',
-            'green': '#4caf50',
-            'blue': '#2196f3',
-            'purple': '#9c27b0',
-            'pink': '#e91e63',
-            'orange': '#ff5722',
-            'gray': '#9e9e9e',
-            'grey': '#9e9e9e'
-        };
-
-        let currentData = null;
-
-        async function loadDashboard() {
-            const content = document.getElementById('content');
-            content.innerHTML = '<div class="loading">Loading portfolio data...</div>';
-            
-            try {
-                const response = await fetch('/api/dashboard');
-                const data = await response.json();
-                
-                if (!response.ok) throw new Error(data.error || 'Failed to load dashboard');
-                
-                currentData = data;
-                content.innerHTML = '';
-                
-                data.forEach(portfolioData => {
-                    const stats = calculateStats(portfolioData.projects);
-                    const progressText = generateProgressDescription(stats, portfolioData.projects.length);
-                    
-                    content.innerHTML = `
-                        <div class="stats-grid">
-                            <div class="stat-card">
-                                <div class="stat-number">${portfolioData.projects.length}</div>
-                                <div class="stat-label">Total Projects</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-number on-track">${stats.onTrack}</div>
-                                <div class="stat-label">On Track</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-number at-risk">${stats.atRisk}</div>
-                                <div class="stat-label">At Risk</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-number off-track">${stats.offTrack}</div>
-                                <div class="stat-label">Off Track</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-number" style="color: #2196f3;">${stats.onHold}</div>
-                                <div class="stat-label">On Hold</div>
-                            </div>
-                        </div>
-                        
-                        <div class="projects-section">
-                            <h2 class="section-title">${portfolioData.portfolio.name}</h2>
-                            <div class="progress-description">${progressText}</div>
-                            
-                            <div class="filters">
-                                <div class="filter-group">
-                                    <label for="ownerFilter">Filter by Project Owner</label>
-                                    <select id="ownerFilter" class="filter-select" onchange="filterTable()">
-                                        <option value="">All Owners</option>
-                                        ${getUniqueOwners(portfolioData.projects).map(owner => `<option value="${owner}">${owner}</option>`).join('')}
-                                    </select>
-                                </div>
-                                <div class="filter-group">
-                                    <label for="priorityFilter">Filter by Priority</label>
-                                    <select id="priorityFilter" class="filter-select" onchange="filterTable()">
-                                        <option value="">All Priorities</option>
-                                        ${getUniquePriorities(portfolioData.projects).map(priority => `<option value="${priority}">${priority}</option>`).join('')}
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <table class="projects-table" id="projectsTable">
-                                <thead>
-                                    <tr>
-                                        <th>Status</th>
-                                        <th>Project Name</th>
-                                        <th>Priority</th>
-                                        <th>Owner</th>
-                                        <th>Budgeted Time</th>
-                                        <th>Actual Time (Hours)</th>
-                                        <th>Remaining</th>
-                                        <th>FY Quarter Start</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${portfolioData.projects.map((project, index) => `
-                                        <tr class="${project.status ? 'clickable' : ''}" data-project-index="${index}">
-                                            <td>
-                                                <div class="status-badge" style="background-color: ${getStatusBgColor(project.status)}; color: ${getStatusTextColor(project.status)}">
-                                                    <span class="status-symbol" style="background-color: ${getStatusColor(project.status)}"></span>
-                                                    ${getStatusType(project.status)}
-                                                </div>
-                                            </td>
-                                            <td class="project-name">${project.name}</td>
-                                            <td class="${getPriorityClass(project.customFields?.priority)}">${project.customFields?.priority || '-'}</td>
-                                            <td>${project.owner || '-'}</td>
-                                            <td>${project.customFields?.budgetedTime || '-'}</td>
-                                            <td>${project.customFields?.actualTimeFTEs || '-'}</td>
-                                            <td class="${getRemainingClass(project.customFields?.remainingTime)}">${project.customFields?.remainingTime || '-'}</td>
-                                            <td class="${getQuarterClass(project.customFields?.fyQuarterStart)}">${project.customFields?.fyQuarterStart || '-'}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    `;
-                });
-                
-                // Add event delegation for row clicks
-                document.addEventListener('click', handleRowClick);
-                
-            } catch (error) {
-                content.innerHTML = `<div class="error">Error: ${error.message}</div>`;
-            }
-        }
-
-        function handleRowClick(event) {
-            const row = event.target.closest('tr.clickable');
-            if (row) {
-                const projectIndex = parseInt(row.dataset.projectIndex);
-                openStatusReport(projectIndex);
-            }
-        }
-
-        function formatStatusText(text) {
-            if (!text) return '';
-            
-            // Convert common patterns to HTML
-            let formatted = text
-                // Convert "Summary" or "SUMMARY" at start of line to h2
-                .replace(/^(Summary|SUMMARY)$/gm, '<h2>Summary</h2>')
-                // Convert other standalone words that might be headings
-                .replace(/^([A-Z][A-Za-z\s]+):?$/gm, '<h3>$1</h3>')
-                // Convert bullet points
-                .replace(/^[\*\-\•]\s+(.+)$/gm, '<li>$1</li>')
-                // Convert numbered lists
-                .replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>')
-                // Convert line breaks to paragraphs
-                .split('\n\n').map(paragraph => {
-                    if (paragraph.includes('<li>')) {
-                        return '<ul>' + paragraph + '</ul>';
-                    } else if (paragraph.includes('<h')) {
-                        return paragraph;
-                    } else if (paragraph.trim()) {
-                        return '<p>' + paragraph.replace(/\n/g, '<br>') + '</p>';
-                    }
-                    return '';
-                }).join('');
-            
-            return formatted;
-        }
-
-        function openStatusReport(projectIndex) {
-            if (!currentData || !currentData[0] || !currentData[0].projects[projectIndex]) return;
-            
-            const project = currentData[0].projects[projectIndex];
-            const sidePanel = document.getElementById('sidePanel');
-            const title = document.getElementById('sidePanelTitle');
-            const content = document.getElementById('sidePanelContent');
-            
-            title.textContent = project.name;
-            
-            if (project.status && project.status.text) {
-                const statusDate = project.status.created_at ? new Date(project.status.created_at).toLocaleDateString() : 'Unknown date';
-                const formattedText = formatStatusText(project.status.text);
-                content.innerHTML = `
-                    <div class="status-report">
-                        <div class="status-report-title">Latest Status Update</div>
-                        <div class="status-report-date">${statusDate}</div>
-                        <div class="status-report-text">${formattedText}</div>
-                    </div>
-                `;
-            } else {
-                content.innerHTML = '<div class="no-status">No status report available for this project</div>';
-            }
-            
-            sidePanel.classList.add('open');
-        }
-
-        function closeSidePanel() {
-            document.getElementById('sidePanel').classList.remove('open');
-        }
-
-        function calculateStats(projects) {
-            return projects.reduce((stats, project) => {
-                const statusType = getStatusType(project.status);
-                switch(statusType) {
-                    case 'On Track': stats.onTrack++; break;
-                    case 'At Risk': stats.atRisk++; break;
-                    case 'Off Track': stats.offTrack++; break;
-                    case 'Complete': stats.complete++; break;
-                    case 'On Hold': stats.onHold++; break;
-                }
-                return stats;
-            }, { onTrack: 0, atRisk: 0, offTrack: 0, complete: 0, onHold: 0 });
-        }
-
-        function generateProgressDescription(stats, total) {
-            const onTrackPercent = Math.round((stats.onTrack / total) * 100);
-            const atRiskPercent = Math.round((stats.atRisk / total) * 100);
-            
-            let description = `Portfolio health overview: ${onTrackPercent}% of projects are on track. `;
-            
-            if (stats.atRisk > 0) {
-                description += `${atRiskPercent}% require attention and may need additional resources or timeline adjustments. `;
-            }
-            
-            if (stats.offTrack > 0) {
-                description += `${stats.offTrack} project(s) are significantly behind schedule and need immediate intervention. `;
-            }
-            
-            if (stats.complete > 0) {
-                description += `${stats.complete} project(s) have been successfully completed. `;
-            }
-            
-            return description;
-        }
-
-        function getStatusColor(status) {
-            if (!status || !status.color) return '#9e9e9e';
-            return statusColors[status.color.toLowerCase()] || '#9e9e9e';
-        }
-
-        function getStatusBgColor(status) {
-            if (!status || !status.color) return '#f6f8fa';
-            const color = statusColors[status.color.toLowerCase()];
-            return color ? color + '20' : '#f6f8fa';
-        }
-
-        function getStatusTextColor(status) {
-            if (!status || !status.color) return '#626f86';
-            return statusColors[status.color.toLowerCase()] || '#626f86';
-        }
-
-        function getStatusType(status) {
-            if (!status) return 'No status';
-            
-            const statusMap = {
-                'green': 'On Track',
-                'yellow': 'At Risk', 
-                'red': 'Off Track',
-                'blue': 'On Hold',
-                'purple': 'Complete'
-            };
-            
-            return statusMap[status.color?.toLowerCase()] || 'Unknown';
-        }
-
-        function getRemainingClass(remaining) {
-            if (remaining === '-') return '';
-            const value = parseFloat(remaining);
-            if (value > 0) return 'remaining-positive';
-            if (value < 0) return 'remaining-negative';
-            return 'remaining-zero';
-        }
-
-        function getQuarterClass(quarter) {
-            if (!quarter || quarter === '-') return '';
-            const quarterText = quarter.toLowerCase();
-            if (quarterText.includes('q1')) return 'quarter-q1';
-            if (quarterText.includes('q2')) return 'quarter-q2';
-            if (quarterText.includes('q3')) return 'quarter-q3';
-            if (quarterText.includes('q4')) return 'quarter-q4';
-            return '';
-        }
-
-        function getPriorityClass(priority) {
-            if (!priority || priority === '-') return 'priority-none';
-            const priorityText = priority.toLowerCase();
-            if (priorityText.includes('high')) return 'priority-high';
-            if (priorityText.includes('medium')) return 'priority-medium';
-            if (priorityText.includes('low')) return 'priority-low';
-            return 'priority-none';
-        }
-
-        function getUniqueOwners(projects) {
-            const owners = projects.map(p => p.owner || '-').filter(owner => owner !== '-');
-            return [...new Set(owners)].sort();
-        }
-
-        function getUniquePriorities(projects) {
-            const priorities = projects.map(p => p.customFields?.priority || '-').filter(priority => priority !== '-');
-            return [...new Set(priorities)].sort();
-        }
-
-        function filterTable() {
-            const ownerFilter = document.getElementById('ownerFilter').value;
-            const priorityFilter = document.getElementById('priorityFilter').value;
-            const table = document.getElementById('projectsTable');
-            const rows = table.querySelectorAll('tbody tr');
-
-            rows.forEach(row => {
-                const ownerCell = row.cells[3].textContent.trim();
-                const priorityCell = row.cells[2].textContent.trim();
-                
-                const ownerMatch = !ownerFilter || ownerCell === ownerFilter;
-                const priorityMatch = !priorityFilter || priorityCell === priorityFilter;
-                
-                if (ownerMatch && priorityMatch) {
-                    row.classList.remove('hidden');
-                } else {
-                    row.classList.add('hidden');
-                }
-            });
-        }
-
-        // Load dashboard on page load
-        loadDashboard();
-        
-        // Auto-refresh every hour
-        setInterval(loadDashboard, 3600000);
-
-        // Close side panel when clicking outside
-        document.addEventListener('click', function(event) {
-            const sidePanel = document.getElementById('sidePanel');
-            if (sidePanel.classList.contains('open') && !sidePanel.contains(event.target)) {
-                closeSidePanel();
-            }
-        });
-    </script>
+    </aside>
 </body>
 </html>
