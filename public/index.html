@@ -3,7 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Strategy & Analytics Work Plan Dashboard</title>
+    <title>Data Strategy &amp; Analytics Work Plan Dashboard</title>
+    <meta name="theme-color" content="#0b2d3a">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <script src="/js/dashboard-utils.js" defer></script>
+    <script src="/js/api.js" defer></script>
+    <script src="/js/dashboard.js" defer></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #151b26; min-height: 100vh; }
@@ -49,8 +57,6 @@
         .priority-none { background: #f5f5f5; }
         .loading { text-align: center; padding: 60px; color: white; font-size: 18px; }
         .error { color: #e2483d; text-align: center; padding: 40px; background: rgba(255,255,255,0.95); margin: 24px 0; border-radius: 12px; }
-        
-        /* Side Panel Styles */
         .side-panel { position: fixed; top: 0; right: -500px; width: 500px; height: 100vh; background: white; box-shadow: -4px 0 20px rgba(0,0,0,0.15); transition: right 0.3s ease; z-index: 1000; overflow-y: auto; }
         .side-panel.open { right: 0; }
         .side-panel-header { padding: 24px; border-bottom: 1px solid #e8ecf0; display: flex; justify-content: space-between; align-items: center; }
@@ -74,8 +80,6 @@
         .filter-select { padding: 8px 12px; border: 1px solid #e8ecf0; border-radius: 4px; font-size: 14px; background: white; }
         .filter-select:focus { outline: none; border-color: #667eea; }
         .hidden { display: none !important; }
-        
-        /* Sidebar Navigation */
         .sidebar { position: fixed; left: 0; top: 0; width: 250px; height: 100vh; background: #2c3e50; color: white; z-index: 1000; overflow-y: auto; }
         .sidebar-header { padding: 20px; border-bottom: 1px solid #34495e; }
         .sidebar-title { font-size: 18px; font-weight: 600; margin: 0; }
@@ -91,36 +95,28 @@
         .nav-item.expanded .nav-caret { transform: rotate(180deg); }
         .main-content { margin-left: 250px; min-height: 100vh; }
     </style>
-</head>
-<body>
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h2 class="sidebar-title" id="sidebar-title">DSA Dashboard</h2>
-        </div>
-        <nav class="sidebar-nav" id="sidebar-nav">
-            <!-- Menu items will be loaded from config -->
-        </nav>
-    </div>
-    <div class="main-content">
-        <div class="container">
-        <div class="header">
-            <h1>Data Strategy & Analytics Work Plan Dashboard</h1>
-            <div class="subtitle">Real-time tracking of DSA section work plan progress and deliverables</div>
-            <div class="toolbar">
-                <button class="refresh-btn" onclick="loadDashboard()">🔄 Refresh Data</button>
-                <a href="https://app.asana.com/0/portfolio/1209134187526722/1209153842159700" target="_blank" class="refresh-btn" style="text-decoration: none;">📋 View in Asana</a>
+
             </div>
         </div>
-        <div id="content">
+    </header>
+
+    <main class="container">
+        <div id="content" aria-live="polite">
             <div class="loading">Loading portfolio data...</div>
         </div>
-    </div>
+    </main>
 
-    <!-- Side Panel -->
-    <div id="sidePanel" class="side-panel">
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <span>Metropolitan Transportation Commission</span>
+            <span>Data Strategy &amp; Analytics</span>
+        </div>
+    </footer>
+
+    <aside id="sidePanel" class="side-panel" aria-hidden="true" aria-labelledby="sidePanelTitle">
         <div class="side-panel-header">
-            <div class="side-panel-title" id="sidePanelTitle">Status Report</div>
-            <button class="close-btn" onclick="closeSidePanel()">×</button>
+            <h2 class="side-panel-title" id="sidePanelTitle">Status Report</h2>
+            <button id="closePanelButton" class="close-button" type="button" aria-label="Close status report">&times;</button>
         </div>
         <div class="side-panel-content" id="sidePanelContent">
             <div class="no-status">No status report available</div>
@@ -241,7 +237,6 @@
                     `;
                 });
                 
-                // Add event delegation for row clicks
                 document.addEventListener('click', handleRowClick);
                 
             } catch (error) {
@@ -259,25 +254,15 @@
 
         function formatStatusText(text) {
             if (!text) return '';
-            
-            // Check if text contains project highlights table data
             if (text.includes('Project-Specific Highlights & Budget Utilization:')) {
                 return formatProjectTable(text);
             }
-            
-            // Convert common patterns to HTML
             let formatted = text
-                // Convert "Summary" or "SUMMARY" at start of line to h2
                 .replace(/^(Summary|SUMMARY)$/gm, '<h2>Summary</h2>')
-                // Convert specific headings to h3
                 .replace(/^(Next Quarter Outlook|Projects Expected to Start in Q2|Next Quarter Outlook \(Q2\)Ongoing Projects \(Carrying Over from Q1\)|Budget & Resource Utilization \(FY25\/26 Q1\))$/gmi, '<h3>$1</h3>')
-                // Convert other standalone words that might be headings
                 .replace(/^([A-Z][A-Za-z\s]+):?$/gm, '<h3>$1</h3>')
-                // Convert bullet points
                 .replace(/^[\*\-\•]\s+(.+)$/gm, '<li>$1</li>')
-                // Convert numbered lists
                 .replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>')
-                // Convert line breaks to paragraphs
                 .split('\n\n').map(paragraph => {
                     if (paragraph.includes('<li>')) {
                         return '<ul>' + paragraph + '</ul>';
@@ -288,7 +273,6 @@
                     }
                     return '';
                 }).join('');
-            
             return formatted;
         }
         
@@ -296,8 +280,6 @@
             const lines = text.split('\n');
             let tableStart = -1;
             let tableEnd = -1;
-            
-            // Find table boundaries
             for (let i = 0; i < lines.length; i++) {
                 if (lines[i].includes('Project-Specific Highlights & Budget Utilization:')) {
                     tableStart = i + 1;
@@ -306,9 +288,7 @@
                     break;
                 }
             }
-            
             if (tableStart === -1) {
-                // No table found, apply standard formatting
                 return text
                     .replace(/^(Summary|SUMMARY)$/gm, '<h2>Summary</h2>')
                     .replace(/^(Next Quarter Outlook|Projects Expected to Start in Q2|Next Quarter Outlook \(Q2\)Ongoing Projects \(Carrying Over from Q1\)|Budget & Resource Utilization \(FY25\/26 Q1\))$/gmi, '<h3>$1</h3>')
@@ -325,25 +305,19 @@
                         return '';
                     }).join('');
             }
-            
             const beforeTable = lines.slice(0, tableStart - 1).join('\n');
             const afterTable = tableEnd > -1 ? lines.slice(tableEnd).join('\n') : '';
             const tableLines = tableEnd > -1 ? lines.slice(tableStart, tableEnd) : lines.slice(tableStart);
-            
-            // Format before and after table content
             const formattedBefore = beforeTable
                 .replace(/^(Summary|SUMMARY)$/gm, '<h2>Summary</h2>')
                 .replace(/^(Next Quarter Outlook|Projects Expected to Start in Q2|Next Quarter Outlook \(Q2\)Ongoing Projects \(Carrying Over from Q1\)|Budget & Resource Utilization \(FY25\/26 Q1\))$/gmi, '<h3>$1</h3>')
                 .replace(/^([A-Z][A-Za-z\s]+):?$/gm, '<h3>$1</h3>')
                 .split('\n\n').map(p => p.trim() ? '<p>' + p.replace(/\n/g, '<br>') + '</p>' : '').join('');
-            
             const formattedAfter = afterTable
                 .replace(/^(Summary|SUMMARY)$/gm, '<h2>Summary</h2>')
                 .replace(/^(Next Quarter Outlook|Projects Expected to Start in Q2|Next Quarter Outlook \(Q2\)Ongoing Projects \(Carrying Over from Q1\)|Budget & Resource Utilization \(FY25\/26 Q1\))$/gmi, '<h3>$1</h3>')
                 .replace(/^([A-Z][A-Za-z\s]+):?$/gm, '<h3>$1</h3>')
                 .split('\n\n').map(p => p.trim() ? '<p>' + p.replace(/\n/g, '<br>') + '</p>' : '').join('');
-            
-            // Build HTML table
             let tableHTML = `
                 <h3>Project-Specific Highlights & Budget Utilization:</h3>
                 <table class="projects-table" style="margin-top: 16px;">
@@ -359,8 +333,6 @@
                     </thead>
                     <tbody>
             `;
-            
-            // Hard-coded table data since parsing is complex
             const projectData = [
                 ['Housing Element Sites Database', '🟢 On Track', '120 hrs', '147 hrs', '122% ⚠️', 'Exceeded Q1 budget due to early milestone completion'],
                 ['DSA SharePoint Site Development', '🟢 On Track', '588 hrs', '14h 15m', '2%', 'Alpha release completed; expected ramp in Q2'],
@@ -376,7 +348,6 @@
                 ['Bay Area Spatial Info System', '🟢 On Track', '400 hrs', '60 hrs', '15%', 'Ongoing work'],
                 ['Division Liaison Coordination for MPP', '🟢 On Track', '344 hrs', '91 hrs', '26%', 'Partial progress; Q2 ramp expected']
             ];
-            
             projectData.forEach(row => {
                 tableHTML += `
                     <tr>
@@ -389,25 +360,20 @@
                     </tr>
                 `;
             });
-            
             tableHTML += `
                     </tbody>
                 </table>
             `;
-            
             return formattedBefore + tableHTML + formattedAfter;
         }
 
         function openStatusReport(projectIndex) {
             if (!currentData || !currentData[0] || !currentData[0].projects[projectIndex]) return;
-            
             const project = currentData[0].projects[projectIndex];
             const sidePanel = document.getElementById('sidePanel');
             const title = document.getElementById('sidePanelTitle');
             const content = document.getElementById('sidePanelContent');
-            
             title.textContent = project.name;
-            
             if (project.status && project.status.text) {
                 const statusDate = project.status.created_at ? new Date(project.status.created_at).toLocaleDateString() : 'Unknown date';
                 const formattedText = formatStatusText(project.status.text);
@@ -421,7 +387,6 @@
             } else {
                 content.innerHTML = '<div class="no-status">No status report available for this project</div>';
             }
-            
             sidePanel.classList.add('open');
         }
 
@@ -446,21 +411,16 @@
         function generateProgressDescription(stats, total) {
             const onTrackPercent = Math.round((stats.onTrack / total) * 100);
             const atRiskPercent = Math.round((stats.atRisk / total) * 100);
-            
             let description = `Portfolio health overview: ${onTrackPercent}% of projects are on track. `;
-            
             if (stats.atRisk > 0) {
                 description += `${atRiskPercent}% require attention and may need additional resources or timeline adjustments. `;
             }
-            
             if (stats.offTrack > 0) {
                 description += `${stats.offTrack} project(s) are significantly behind schedule and need immediate intervention. `;
             }
-            
             if (stats.complete > 0) {
                 description += `${stats.complete} project(s) have been successfully completed. `;
             }
-            
             return description;
         }
 
@@ -482,7 +442,6 @@
 
         function getStatusType(status) {
             if (!status) return 'No status';
-            
             const statusMap = {
                 'green': 'On Track',
                 'yellow': 'At Risk', 
@@ -490,7 +449,6 @@
                 'blue': 'On Hold',
                 'purple': 'Complete'
             };
-            
             return statusMap[status.color?.toLowerCase()] || 'Unknown';
         }
 
@@ -540,10 +498,8 @@
             rows.forEach(row => {
                 const ownerCell = row.cells[3].textContent.trim();
                 const priorityCell = row.cells[2].textContent.trim();
-                
                 const ownerMatch = !ownerFilter || ownerCell === ownerFilter;
                 const priorityMatch = !priorityFilter || priorityCell === priorityFilter;
-                
                 if (ownerMatch && priorityMatch) {
                     row.classList.remove('hidden');
                 } else {
@@ -557,24 +513,19 @@
                 setTimeout(loadMenuFromConfig, 100);
                 return;
             }
-            
             const sidebarTitle = document.getElementById('sidebar-title');
             const sidebarNav = document.getElementById('sidebar-nav');
-            
             sidebarTitle.textContent = menuConfig.title;
-            
             let menuHTML = '';
             menuConfig.items.forEach(item => {
                 const activeClass = item.active ? ' active' : '';
                 const onclick = item.action === 'toggleSubmenu' ? `toggleSubmenu(event, '${item.id}')` : `showSection('${item.id}')`;
-                
                 const caret = item.submenu ? ' <span class="nav-caret">▼</span>' : '';
                 menuHTML += `
                     <a href="#" class="nav-item${activeClass}" onclick="${onclick}">
                         <i>${item.icon}</i> ${item.title}${caret}
                     </a>
                 `;
-                
                 if (item.submenu) {
                     menuHTML += `<div class="nav-submenu" id="${item.id}-submenu">`;
                     item.submenu.forEach(subItem => {
@@ -583,18 +534,13 @@
                     menuHTML += `</div>`;
                 }
             });
-            
             sidebarNav.innerHTML = menuHTML;
         }
         
-        // Load menu and dashboard on page load
         document.addEventListener('DOMContentLoaded', loadMenuFromConfig);
         loadDashboard();
-        
-        // Auto-refresh every hour
         setInterval(loadDashboard, 3600000);
 
-        // Close side panel when clicking outside
         document.addEventListener('click', function(event) {
             const sidePanel = document.getElementById('sidePanel');
             if (sidePanel.classList.contains('open') && !sidePanel.contains(event.target)) {
@@ -603,12 +549,8 @@
         });
         
         function showSection(section) {
-            // Remove active class from all nav items
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            // Add active class to clicked item
             event.target.classList.add('active');
-            
-            // Show different content based on section
             const content = document.getElementById('content');
             switch(section) {
                 case 'portfolio':
@@ -635,12 +577,9 @@
                 try {
                     const response = await fetch('/api/portfolio-status');
                     const data = await response.json();
-                    
                     if (!response.ok) throw new Error(data.error || 'Failed to load portfolio status');
-                    
                     const formattedText = formatStatusText(data.status?.text || 'No status report available');
                     const statusDate = data.status?.created_at ? new Date(data.status.created_at).toLocaleDateString() : 'Unknown date';
-                    
                     content.innerHTML = `
                         <div class="projects-section">
                             <h2 class="section-title">Q1 2025 Portfolio Status Report</h2>
@@ -662,5 +601,7 @@
     </script>
     <script src="/config/menu-config.js"></script>
     </div>
+    </aside>
+
 </body>
 </html>
