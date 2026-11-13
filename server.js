@@ -44,6 +44,15 @@ app.get('/api/portfolio/:id', async (req, res) => {
   }
 });
 
+app.get('/api/portfolio-status', async (req, res) => {
+  try {
+    const portfolioStatus = await client.getPortfolioStatus();
+    res.json(portfolioStatus);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Data Strategy & Analytics Work Plan Dashboard running on http://localhost:${PORT}`);
   console.log(`Dashboard endpoint: http://localhost:${PORT}/api/dashboard`);

@@ -45,6 +45,38 @@ class AsanaClient {
     return response.data.data;
   }
 
+  async getStatusUpdate(statusUpdateId) {
+    const response = await axios.get(`${this.baseURL}/status_updates/${statusUpdateId}?opt_fields=text,created_at`, { headers: this.headers });
+    return response.data.data;
+  }
+
+  async getPortfolioStatus(portfolioId = '1209134187526722') {
+    try {
+      const response = await axios.get(`${this.baseURL}/portfolios/${portfolioId}?opt_fields=current_status_update,name`, { headers: this.headers });
+      
+      if (response.data.data.current_status_update) {
+        const statusUpdate = await this.getStatusUpdate(response.data.data.current_status_update.gid);
+        return {
+          portfolio: response.data.data.name,
+          status: statusUpdate
+        };
+      } else {
+        return {
+          portfolio: response.data.data.name,
+          status: { text: 'No status update available for this portfolio.' }
+        };
+      }
+    } catch (error) {
+      console.error('Portfolio status error:', error.response?.data || error.message);
+      // Fallback to basic portfolio info if status update not available
+      const response = await axios.get(`${this.baseURL}/portfolios/${portfolioId}?opt_fields=name`, { headers: this.headers });
+      return {
+        portfolio: response.data.data.name,
+        status: { text: 'No status update available for this portfolio.' }
+      };
+    }
+  }
+
   async getDashboardData(portfolioId = '1209134187526722') {
     const [portfolio, projects] = await Promise.all([
       this.getPortfolioById(portfolioId),

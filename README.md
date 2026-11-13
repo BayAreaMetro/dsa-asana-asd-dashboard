@@ -26,9 +26,12 @@ A Node.js application for tracking Data Strategy and Analytics section work plan
 
 4. Run the application:
    ```bash
-   npm start
+   npm run server
    ```
-
+5. Open the dashboard:
+```bash
+http://localhost:8080
+  ```
 ## Usage
 
 The application will display all portfolios, their projects, and current project statuses in the console.
